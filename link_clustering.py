@@ -35,7 +35,7 @@ from copy import copy
 from operator import itemgetter
 from heapq import heappush, heappop
 from collections import defaultdict
-from itertools import combinations # requires python 2.6+
+from itertools import combinations, chain # requires python 2.6+
 from optparse import OptionParser
 
 def swap(a,b):
@@ -70,6 +70,8 @@ class HLC:
             self.cid2nodes[cid] = set( edge )
     
     def merge_comms(self,edge1,edge2):
+        if not edge1 or not edge2: # We'll get (None, None) at the end of clustering
+            return
         cid1,cid2 = self.edge2cid[edge1],self.edge2cid[edge2]
         if cid1 == cid2: # already merged!
             return
@@ -101,7 +103,10 @@ class HLC:
         else: 
             H = similarities_weighted( self.adj, w )
         S_prev = -1
-        for oms,eij_eik in H:
+
+        # (1.0, (None, None)) takes care of the special case where the last
+        # merging gives the maximum partition density (e.g. a single clique). 
+        for oms,eij_eik in chain(H, [(1.0, (None, None))] ):
             S = 1-oms # remember, H is a min-heap
             if S < threshold:
                 break
@@ -115,7 +120,7 @@ class HLC:
                 S_prev = S
             self.merge_comms( *eij_eik )
         
-        self.list_D.append( (0.0,self.list_D[-1][1]) ) # add final val
+        #self.list_D.append( (0.0,self.list_D[-1][1]) ) # add final val
         if threshold != None:
             return self.edge2cid, self.D
         return self.best_P, self.best_S, self.best_D, self.list_D
