@@ -1,18 +1,18 @@
 About
 =====
 
-Here are the codes for finding link communities [1] in complex networks.
-Currently, we have two version: Python and C++. 
+Here is the code for finding link communities [1] in complex networks.
+Currently, we have two implementations: Python and C++. 
 
-* Python version: it implements the whole algorithm: it calculates
+* Python: This implements the complete algorithm. It calculates
   similarities, constructs the dendrogram, and extracts the optimal
-  communities. It is suitable in many occasions. It's easier to use and gives
-  you the exact solution. However, it may be too slow for very large networks,
-  in which you may want to use C++ version.  
+  communities. It is suitable for many occasions, is easy to use, and gives
+  the exact solution. It may be too slow for very large networks, however,
+  in which case you may want to use the C++ version.
 
-* C++ version: to save computing time and memory usage, it calculates
-  similarities but does not construct the dendrogram. You can specify
-  similarity threshold to obtain the communities.
+* C++: to save computing time and memory usage, it calculates
+  similarities but does not construct the dendrogram. You must manually 
+  specify the similarity threshold used to obtain the communities.
 
 References
 ==========
