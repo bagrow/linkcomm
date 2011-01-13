@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# encoding: utf-8
 
 # link_clustering.py
 # Jim Bagrow, Yong-Yeol Ahn
-# Last Modified: 2010-08-27
+# Last Modified: 2011-01-12
 
 # Copyright 2008,2009,2010 James Bagrow, Yong-Yeol Ahn
 # 
@@ -61,6 +60,7 @@ class HLC:
         self.cid2nodes,self.cid2edges = {},{}
         self.initialize_edges() # every edge in its own comm
         self.D = 0.0 # partition density
+        self.list_cid_mergers = []
     
     def initialize_edges(self):
         for cid,edge in enumerate(self.edges):
@@ -69,7 +69,7 @@ class HLC:
             self.cid2edges[cid] = set([edge])
             self.cid2nodes[cid] = set( edge )
     
-    def merge_comms(self,edge1,edge2):
+    def merge_comms(self,edge1,edge2, S=None):
         if not edge1 or not edge2: # We'll get (None, None) at the end of clustering
             return
         cid1,cid2 = self.edge2cid[edge1],self.edge2cid[edge2]
@@ -85,6 +85,8 @@ class HLC:
         for e in self.cid2edges[cid2]: # move edges,nodes from cid2 to cid1
             self.cid2nodes[cid1] |= set( e )
             self.edge2cid[e] = cid1
+        if S is not None:
+            self.list_cid_mergers.append( (cid2,cid1,S) ) # cid2 --> cid1
         del self.cid2edges[cid2], self.cid2nodes[cid2]
         
         m,n = len(self.cid2edges[cid1]),len(self.cid2nodes[cid1]) 
@@ -103,7 +105,7 @@ class HLC:
         else: 
             H = similarities_weighted( self.adj, w )
         S_prev = -1
-
+        
         # (1.0, (None, None)) takes care of the special case where the last
         # merging gives the maximum partition density (e.g. a single clique). 
         for oms,eij_eik in chain(H, [(1.0, (None, None))] ):
@@ -118,14 +120,13 @@ class HLC:
                     self.best_P = copy(self.edge2cid) # slow...
                 self.list_D.append( (S,self.D) )
                 S_prev = S
-            self.merge_comms( *eij_eik )
+            self.merge_comms( *eij_eik, S=S )
         
         #self.list_D.append( (0.0,self.list_D[-1][1]) ) # add final val
         if threshold != None:
             return self.edge2cid, self.D
         return self.best_P, self.best_S, self.best_D, self.list_D
     
-
 
 def similarities_unweighted(adj):
     """Get all the edge similarities. Input dict maps nodes to sets of neighbors.
@@ -186,7 +187,7 @@ def read_edgelist_unweighted(filename,delimiter=None,nodetype=str):
             edges.add( swap(ni,nj) )
             adj[ni].add(nj)
             adj[nj].add(ni) # since undirected
-    return dict(adj), edges
+    return dict(adj), list(edges)
 
 
 def read_edgelist_weighted(filename,delimiter=None,nodetype=str,weighttype=float):
@@ -206,7 +207,7 @@ def read_edgelist_weighted(filename,delimiter=None,nodetype=str,weighttype=float
             ij2wij[ni,nj] = wij
             adj[ni].add(nj)
             adj[nj].add(ni) # since undirected
-    return dict(adj), edges, ij2wij
+    return dict(adj), list(edges), ij2wij
 
 
 def write_edge2cid(e2c,filename,delimiter="\t"):
@@ -247,6 +248,7 @@ if __name__ == '__main__':
     class MyParser(OptionParser):
         def format_epilog(self, formatter):
             return self.epilog
+        
     
     usage = "usage: python %prog [options] filename"
     description = """The link communities method of Ahn, Bagrow, and Lehmann, Nature, 2010:
@@ -282,7 +284,10 @@ Output:
   
   If no threshold was given to cut the dendrogram, a file ending with
   `_thr_D.txt' is generated, containing the partition density as a
-  function of clustering threshold.
+  function of clustering threshold.  Another file, ending with 
+  `_mergers.txt' records the order that communities are merged,
+  while `_mergers_leaves.txt' identifies the original edges at the
+  base of the dendrogram.
 """
     parser = MyParser(usage, description=description,epilog=epilog)
     parser.add_option("-d", "--delimiter", dest="delimiter", default="\t",
@@ -310,24 +315,39 @@ Output:
     else: 
         adj,edges        = read_edgelist_unweighted(args[0], delimiter=delimiter)
     
+    hlc = HLC(adj,edges)
     
     # run the method:
     if threshold is not None:
         if is_weighted:
-            edge2cid,D_thr = HLC( adj,edges ).single_linkage( threshold, w=ij2wij )
+            edge2cid,D_thr = hlc.single_linkage( threshold, w=ij2wij )
         else:
-            edge2cid,D_thr = HLC( adj,edges ).single_linkage( threshold )
+            edge2cid,D_thr = hlc.single_linkage( threshold )
         print "# D_thr = %f" % D_thr
         write_edge2cid( edge2cid,"%s_thrS%f_thrD%f" % (basename,threshold,D_thr), delimiter=delimiter )
     else:
         if is_weighted:
-            edge2cid,S_max,D_max,list_D = HLC( adj,edges ).single_linkage( w=ij2wij )
+            edge2cid,S_max,D_max,list_D = hlc.single_linkage( w=ij2wij )
         else:
-            edge2cid,S_max,D_max,list_D = HLC( adj,edges ).single_linkage()
+            edge2cid,S_max,D_max,list_D = hlc.single_linkage()
+            
         f = open("%s_thr_D.txt" % basename,'w')
         for s,D in list_D:
             print >>f, s, D
         f.close()
+        
         print "# D_max = %f\n# S_max = %f" % (D_max,S_max)
         write_edge2cid( edge2cid,"%s_maxS%f_maxD%f" % (basename,S_max,D_max), delimiter=delimiter )
+            
+        # record the "dendrogram":
+        f = open( "%s_mergers_leaves.txt" % basename, 'w')
+        for cid,edge in enumerate(hlc.edges):
+            print >>f, "%i%s%s%s%s" % (cid,delimiter,edge[0],delimiter,edge[1])
+        f.close()
+        f = open( "%s_mergers.txt" % basename, 'w' )
+        for cid2,cid1,S in hlc.list_cid_mergers:
+            print >>f, cid2, cid1, S
+        f.close()
+    
+
 
