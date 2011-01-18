@@ -44,7 +44,10 @@ def swap(a,b):
 
 
 def Dc(m,n):
-    """partition density"""
+    """partition density. 
+    
+    This function returns D_c * m / 2.
+    """
     try:
         return m*(m-n+1.0)/(n-2.0)/(n-1.0)
     except ZeroDivisionError: # numerator is "strongly zero"
