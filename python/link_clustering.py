@@ -131,13 +131,14 @@ class HLC:
         return self.best_P, self.best_S, self.best_D, self.list_D
     
 
-def similarities_unweighted(adj):
+def similarities_unweighted(adj, verbose=True):
     """Compute all the edge similarities. 
     
     Input: a dictionary maps each node to a set of neighbors.
     Output: a list of decorated edge-pairs, (1-sim,eij,eik), ordered by similarity.
     """
-    print "computing similarities..."
+    if verbose:
+        print "computing similarities..."
     i_adj = dict( (n,adj[n] | set([n])) for n in adj)  # node -> inclusive neighbors
     min_heap = [] # elements are (1-sim,eij,eik)
     for n in adj: # n is the shared node
