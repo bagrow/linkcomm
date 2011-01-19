@@ -27,8 +27,8 @@ class TestLinkClustering(unittest.TestCase):
                 }
         answers = [(0.0, (('a', 'b'), ('a', 'c'))),  # every edge pair has 
                   (0.0, (('a', 'b'), ('b', 'c'))),   # similarity 1.0.
-                  (0.0, (('a', 'c'), ('b', 'c'))),   # nodes are sorted in an edge.
-                  ] 
+                  (0.0, (('a', 'c'), ('b', 'c'))),   # everything is sorted inside.
+                  ]                                  # each edge pair. 
         similarities = similarities_unweighted(adj, verbose=False)
         for answer in answers:
             self.assertTrue(answer in similarities)

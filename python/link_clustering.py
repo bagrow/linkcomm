@@ -134,7 +134,7 @@ class HLC:
 def similarities_unweighted(adj, verbose=True):
     """Compute all the edge similarities. 
     
-    Input: a dictionary maps each node to a set of neighbors.
+    Input: a dictionary that maps each node to a set of neighbors.
     Output: a list of decorated edge-pairs, (1-sim,eij,eik), ordered by similarity.
     """
     if verbose:
