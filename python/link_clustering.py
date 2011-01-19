@@ -132,8 +132,10 @@ class HLC:
     
 
 def similarities_unweighted(adj):
-    """Get all the edge similarities. Input dict maps nodes to sets of neighbors.
-    Output is a list of decorated edge-pairs, (1-sim,eij,eik), ordered by similarity.
+    """Compute all the edge similarities. 
+    
+    Input: a dictionary maps each node to a set of neighbors.
+    Output: a list of decorated edge-pairs, (1-sim,eij,eik), ordered by similarity.
     """
     print "computing similarities..."
     i_adj = dict( (n,adj[n] | set([n])) for n in adj)  # node -> inclusive neighbors
