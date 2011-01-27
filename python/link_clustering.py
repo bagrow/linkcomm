@@ -142,7 +142,7 @@ def similarities_unweighted(adj, verbose=True):
     return [ heappop(min_heap) for i in xrange(len(min_heap)) ] # return ordered edge pairs
 
 
-def similarities_weighted(adj, ij2wij):
+def similarities_weighted(adj, ij2wij, verbose=True):
     """Same as similarities_unweighted but using tanimoto coefficient. `adj' is a dict
     mapping nodes to sets of neighbors, ij2wij is a dict mapping an edge (ni,nj) tuple
     to the weight wij of that edge.  
