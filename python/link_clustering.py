@@ -2,9 +2,9 @@
 
 # link_clustering.py
 # Jim Bagrow, Yong-Yeol Ahn
-# Last Modified: 2011-01-12
+# Last Modified: 2011-01-27
 
-# Copyright 2008,2009,2010 James Bagrow, Yong-Yeol Ahn
+# Copyright 2008,2009,2010,2011 James Bagrow, Yong-Yeol Ahn
 # 
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -19,15 +19,6 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-"""
-changes 2010-08-27:
-    * all three output files now contain the same community id numbers
-    * comm2nodes and comm2edges both present the cid as the first
-    entry of each line.  Previously only comm2nodes did this.
-    * implemented weighted version, added '-w' switch
-    * expanded help string to explain input and outputs
-"""
 
 import sys, os
 from copy import copy
@@ -271,7 +262,8 @@ Input:
     
 Output: 
   Three text files with extensions .edge2comm.txt, .comm2edges.txt,
-  and .comm2nodes.txt store the communities.
+  and .comm2nodes.txt store the communities. The cids are coherent
+  throughout the three files. 
  
   edge2comm, an edge on each line followed by the community
   id (cid) of the edge's link comm:
