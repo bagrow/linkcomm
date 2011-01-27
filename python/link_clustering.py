@@ -35,7 +35,8 @@ def swap(a,b):
 
 
 def Dc(m,n):
-    """Actual partition density."""
+    """Actual partition density.
+    """
     return Dc_part(m,n)*2.0/m
 
 

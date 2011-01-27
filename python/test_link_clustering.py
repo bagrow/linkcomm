@@ -21,16 +21,21 @@ class TestLinkClustering(unittest.TestCase):
         '''similarities_unweighted(adj) returns a list of decoredted edge pairs.
         (1.0-sim, eij, eik)
         '''
-        adj = { 'a': set(['b', 'c']),  # a triangle
-                'b': set(['a', 'c']),
-                'c': set(['a', 'b']) 
-                }
-        answers = [(0.0, (('a', 'b'), ('a', 'c'))),  # every edge pair has 
-                  (0.0, (('a', 'b'), ('b', 'c'))),   # similarity 1.0.
-                  (0.0, (('a', 'c'), ('b', 'c'))),   # everything is sorted inside.
-                  ]                                  # each edge pair. 
-        similarities = similarities_unweighted(adj, verbose=False)
-        for answer in answers:
+        # a triangle.
+        triangle_adj = { 'a': set(['b', 'c']),
+                         'b': set(['a', 'c']),
+                         'c': set(['a', 'b']),
+                       }
+
+        # every edge pair has similarity 1.0. We only need to check the following
+        # pairs because everything is sorted inside each edge pair and each edge.
+        triangle_similarities = [(0.0, (('a', 'b'), ('a', 'c'))),
+                                 (0.0, (('a', 'b'), ('b', 'c'))),
+                                 (0.0, (('a', 'c'), ('b', 'c'))),
+                                ]
+
+        similarities = similarities_unweighted(triangle_adj, verbose=False)
+        for answer in triangle_similarities:
             self.assertTrue(answer in similarities)
 
 
