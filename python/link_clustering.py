@@ -87,8 +87,9 @@ class HLC:
         Dc12 = Dc(m,n)
         self.D = self.D + ( Dc12 -Dc1 - Dc2) * self.Mfactor # update partition density
     
-    def single_linkage(self, threshold=None, w=None):
-        print "clustering..."
+    def single_linkage(self, threshold=None, w=None, verbose=True):
+        if verbose:
+            print "clustering..."
         self.list_D = [(1.0,0.0)] # list of (S_i,D_i) tuples...
         self.best_D = 0.0
         self.best_S = 1.0 # similarity threshold at best_D
@@ -147,7 +148,8 @@ def similarities_weighted(adj, ij2wij, verbose=True):
     mapping nodes to sets of neighbors, ij2wij is a dict mapping an edge (ni,nj) tuple
     to the weight wij of that edge.  
     """
-    print "computing similarities..."
+    if verbose:
+        print "computing similarities..."
     i_adj = dict( ( n, adj[n]|set([n]) ) for n in adj ) # node -> inclusive neighbors
     
     Aij = copy(ij2wij)
