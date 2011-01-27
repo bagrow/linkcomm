@@ -35,7 +35,14 @@ def swap(a,b):
 
 
 def Dc(m,n):
-    """partition density. 
+    """Actual partition density."""
+    return Dc_part(m,n)*2.0/m
+
+
+def Dc_part(m,n):
+    """partition density weighted with the number of edges / 2.
+    For calculating the global partition density, it is convenient to 
+    have edges / 2 factor. 
     
     This function returns D_c * m / 2.
     """
@@ -71,7 +78,7 @@ class HLC:
             return
         m1,m2 = len(self.cid2edges[cid1]),len(self.cid2edges[cid2])
         n1,n2 = len(self.cid2nodes[cid1]),len(self.cid2nodes[cid2])
-        Dc1, Dc2 = Dc(m1,n1), Dc(m2,n2)
+        Dc1, Dc2 = Dc_part(m1,n1), Dc_part(m2,n2)
         if m2 > m1: # merge smaller into larger
             cid1,cid2 = cid2,cid1
         
@@ -84,7 +91,7 @@ class HLC:
         del self.cid2edges[cid2], self.cid2nodes[cid2]
         
         m,n = len(self.cid2edges[cid1]),len(self.cid2nodes[cid1]) 
-        Dc12 = Dc(m,n)
+        Dc12 = Dc_part(m,n)
         self.D = self.D + ( Dc12 -Dc1 - Dc2) * self.Mfactor # update partition density
     
     def single_linkage(self, threshold=None, w=None, verbose=True):

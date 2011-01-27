@@ -11,11 +11,11 @@ class TestLinkClustering(unittest.TestCase):
         '''make sure the partition density function Dc(m,n)'''
         mn_pairs = [(1,2), (3,4)] # trees
         for m,n in mn_pairs:
-            self.assertTrue(abs(0.0*m/2.0 - Dc(m,n)) < self.small_float_num)
+            self.assertTrue(abs(0.0 - Dc(m,n)) < self.small_float_num)
 
         mn_pairs = [(3,3), (6,4)] # cliques
         for m,n in mn_pairs:
-            self.assertTrue(abs(1.0*m/2.0 - Dc(m,n)) < self.small_float_num)
+            self.assertTrue(abs(1.0 - Dc(m,n)) < self.small_float_num)
 
     def test_similarities_unweighted(self):
         '''similarities_unweighted(adj) returns a list of decoredted edge pairs.
