@@ -29,23 +29,24 @@ from itertools import combinations, chain # requires python 2.6+
 from optparse import OptionParser
 
 def swap(a,b):
+    """Returns (a,b) if a>b, else (b,a)"""
     if a > b:
         return b,a
     return a,b
 
 
 def Dc(m,n):
-    """Actual partition density.
+    """Link density D_c for a link community c containing m links and n nodes.
+    The partition density D (for all communities) is given by 
+    D = \sum_c D_c * m_c / M.
     """
     return Dc_part(m,n)*2.0/m
 
 
 def Dc_part(m,n):
-    """partition density weighted with the number of edges / 2.
-    For calculating the global partition density, it is convenient to 
-    have edges / 2 factor. 
-    
-    This function returns D_c * m / 2.
+    """Link density D_c*m/2 for a link community containing m links and n 
+    nodes. The m/2 factor is convenient for efficiently computing the global
+    partition density.
     """
     try:
         return m*(m-n+1.0)/(n-2.0)/(n-1.0)
