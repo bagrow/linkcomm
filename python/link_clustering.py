@@ -2,9 +2,9 @@
 
 # link_clustering.py
 # Jim Bagrow, Yong-Yeol Ahn
-# Last Modified: 2011-01-27
+# Last Modified: 2011-01-29
 
-# Copyright 2008,2009,2010,2011 James Bagrow, Yong-Yeol Ahn
+# Copyright 2008--2011 James Bagrow, Yong-Yeol Ahn
 # 
 # 
 # This program is free software: you can redistribute it and/or modify
