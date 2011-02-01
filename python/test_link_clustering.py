@@ -45,15 +45,15 @@ class TestDirectedLinkClustering(unittest.TestCase):
         self.small_float_num = 1e-6
 
     def test_read_edgelist(self):
-        '''test whether the function correctly read the directed edges.'''
+        '''TODO: test whether the function correctly read the directed edges.'''
         pass
 
     def test_similarities(self):
-        '''test whether the similarities for directed network is correct.'''
+        '''TODO: test whether the similarities for directed network is correct.'''
         pass
 
     def test_partition_density(self):
-        '''test directed partition density.'''
+        '''TODO: test directed partition density.'''
         pass
 
 
