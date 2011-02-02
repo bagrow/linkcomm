@@ -103,7 +103,7 @@ class HLC:
         else: 
             H = similarities_weighted( self.adj, w )
         S_prev = -1
-
+        
         # (1.0, (None, None)) takes care of the special case where the last
         # merging gives the maximum partition density (e.g. a single clique). 
         for oms,eij_eik in chain(H, [(1.0, (None, None))] ):
