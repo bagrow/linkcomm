@@ -179,7 +179,7 @@ def read_edgelist_unweighted(filename,delimiter=None,nodetype=str):
     """
     adj = defaultdict(set) # node to set of neighbors
     edges = set()
-    for line in open(filename):
+    for line in open(filename, 'U'):
         L = line.strip().split(delimiter)
         ni,nj = nodetype(L[0]),nodetype(L[1]) # other columns ignored
         if ni != nj: # skip any self-loops...
@@ -197,7 +197,7 @@ def read_edgelist_weighted(filename,delimiter=None,nodetype=str,weighttype=float
     adj = defaultdict(set)
     edges = set()
     ij2wij = {}
-    for line in open(filename):
+    for line in open(filename, 'U'):
         L = line.strip().split(delimiter)
         ni,nj,wij = nodetype(L[0]),nodetype(L[1]),weighttype(L[2]) # other columns ignored
         if ni != nj: # skip any self-loops...
