@@ -73,8 +73,9 @@ class HLC:
             self.cid2edges[cid] = set([edge])
             self.orig_cid2edge[cid]  = edge
             self.cid2nodes[cid] = set( edge )
+        self.curr_maxcid = len(self.edges) - 1
     
-    def merge_comms(self,edge1,edge2):
+    def merge_comms(self,edge1,edge2,S,dendro_flag=False):
         if not edge1 or not edge2: # We'll get (None, None) at the end of clustering
             return
         cid1,cid2 = self.edge2cid[edge1],self.edge2cid[edge2]
@@ -86,19 +87,30 @@ class HLC:
         if m2 > m1: # merge smaller into larger
             cid1,cid2 = cid2,cid1
 
-        self.cid2edges[cid1] |= self.cid2edges[cid2]
-        for e in self.cid2edges[cid2]: # move edges,nodes from cid2 to cid1
-            self.cid2nodes[cid1] |= set( e )
-            self.edge2cid[e] = cid1
-        del self.cid2edges[cid2], self.cid2nodes[cid2]
-        
-        m,n = len(self.cid2edges[cid1]),len(self.cid2nodes[cid1]) 
+        if dendro_flag:
+            self.curr_maxcid += 1; newcid = self.curr_maxcid
+            self.cid2edges[newcid] = self.cid2edges[cid1] | self.cid2edges[cid2]
+            self.cid2nodes[newcid] = set()
+            for e in chain(self.cid2edges[cid1], self.cid2edges[cid2]):
+                self.cid2nodes[newcid] |= set(e)
+                self.edge2cid[e] = newcid
+            del self.cid2edges[cid1], self.cid2nodes[cid1]
+            del self.cid2edges[cid2], self.cid2nodes[cid2]
+            m,n = len(self.cid2edges[newcid]),len(self.cid2nodes[newcid]) 
+            
+            self.linkage.append( (cid1, cid2, S) )
+
+        else:
+            self.cid2edges[cid1] |= self.cid2edges[cid2]
+            for e in self.cid2edges[cid2]: # move edges,nodes from cid2 to cid1
+                self.cid2nodes[cid1] |= set( e )
+                self.edge2cid[e] = cid1
+            del self.cid2edges[cid2], self.cid2nodes[cid2]
+            
+            m,n = len(self.cid2edges[cid1]),len(self.cid2nodes[cid1]) 
+
         Dc12 = Dc(m,n)
         self.D = self.D + ( Dc12 -Dc1 - Dc2) * self.Mfactor # update partition density
-
-    def merge_comms_dendro(self, edge1, edge2):
-        pass
-
 
     def single_linkage(self, threshold=None, w=None, dendro_flag=False):
         print "clustering..."
@@ -128,10 +140,7 @@ class HLC:
                 self.list_D.append( (S,self.D) )
                 S_prev = S
 
-            if dendro_flag: # for the dendrogram
-                self.merge_comms_dendro( eij_eik[0], eij_eik[1] )
-            else:
-                self.merge_comms( eij_eik[0], eij_eik[1] )
+            self.merge_comms( eij_eik[0], eij_eik[1], S, dendro_flag )
         
         #self.list_D.append( (0.0,self.list_D[-1][1]) ) # add final val
         if threshold != None:
