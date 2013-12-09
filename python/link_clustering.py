@@ -59,6 +59,10 @@ class HLC:
         self.Mfactor  = 2.0 / len(edges)
         self.edge2cid = {}
         self.cid2nodes,self.cid2edges = {},{}
+        self.orig_cid2edge = {}
+        self.curr_maxcid = 0
+        self.linkage = []  # dendrogram
+
         self.initialize_edges() # every edge in its own comm
         self.D = 0.0 # partition density
     
@@ -67,6 +71,7 @@ class HLC:
             edge = swap(*edge) # just in case
             self.edge2cid[edge] = cid
             self.cid2edges[cid] = set([edge])
+            self.orig_cid2edge[cid]  = edge
             self.cid2nodes[cid] = set( edge )
     
     def merge_comms(self,edge1,edge2):
@@ -80,7 +85,7 @@ class HLC:
         Dc1, Dc2 = Dc(m1,n1), Dc(m2,n2)
         if m2 > m1: # merge smaller into larger
             cid1,cid2 = cid2,cid1
-        
+
         self.cid2edges[cid1] |= self.cid2edges[cid2]
         for e in self.cid2edges[cid2]: # move edges,nodes from cid2 to cid1
             self.cid2nodes[cid1] |= set( e )
@@ -90,14 +95,18 @@ class HLC:
         m,n = len(self.cid2edges[cid1]),len(self.cid2nodes[cid1]) 
         Dc12 = Dc(m,n)
         self.D = self.D + ( Dc12 -Dc1 - Dc2) * self.Mfactor # update partition density
-    
-    def single_linkage(self, threshold=None, w=None):
+
+    def merge_comms_dendro(self, edge1, edge2):
+        pass
+
+
+    def single_linkage(self, threshold=None, w=None, dendro_flag=False):
         print "clustering..."
         self.list_D = [(1.0,0.0)] # list of (S_i,D_i) tuples...
         self.best_D = 0.0
         self.best_S = 1.0 # similarity threshold at best_D
         self.best_P = None # best partition, dict: edge -> cid
-        
+
         if w == None: # unweighted
             H = similarities_unweighted( self.adj ) # min-heap ordered by 1-s
         else: 
@@ -118,13 +127,19 @@ class HLC:
                     self.best_P = copy(self.edge2cid) # slow...
                 self.list_D.append( (S,self.D) )
                 S_prev = S
-            self.merge_comms( *eij_eik )
+
+            if dendro_flag: # for the dendrogram
+                self.merge_comms_dendro( eij_eik[0], eij_eik[1] )
+            else:
+                self.merge_comms( eij_eik[0], eij_eik[1] )
         
         #self.list_D.append( (0.0,self.list_D[-1][1]) ) # add final val
         if threshold != None:
             return self.edge2cid, self.D
-        return self.best_P, self.best_S, self.best_D, self.list_D
-    
+        if dendro_flag:
+            return self.best_P, self.best_S, self.best_D, self.list_D, self.orig_cid2edge, self.linkage
+        else:
+            return self.best_P, self.best_S, self.best_D, self.list_D
 
 
 def similarities_unweighted(adj):
@@ -242,6 +257,15 @@ def write_edge2cid(e2c,filename,delimiter="\t"):
     g.close()
 
 
+def write_dendro(filename, orig_cid2edge, linkage):
+    with open(filename + '.cid2edge.txt', 'w') as fout:
+        for cid, e in orig_cid2edge.iteritems():
+            fout.write("%d\t%s,%s\n" % (cid, str(e[0]), str(e[1])))
+
+    with open(filename + '.linkage.txt', 'w') as fout:
+        for x in linkage:
+            fout.write('%s\n' % '\t'.join(map(str, x)))
+
 if __name__ == '__main__':
     # build option parser:
     class MyParser(OptionParser):
@@ -283,6 +307,13 @@ Output:
   If no threshold was given to cut the dendrogram, a file ending with
   `_thr_D.txt' is generated, containing the partition density as a
   function of clustering threshold.
+
+  If the dendrogram option was given, two files are generated. One with
+  `.cid2edge.txt' records the id of each edge and the other one with
+  `.linkage.txt' stores the linkage structure of the hierarchical 
+  clustering. In the linkage file, the edge in the first column is 
+  merged with the one in the second at the similarity value in the 
+  third column.
 """
     parser = MyParser(usage, description=description,epilog=epilog)
     parser.add_option("-d", "--delimiter", dest="delimiter", default="\t",
@@ -291,6 +322,8 @@ Output:
                       help="threshold to cut the dendrogram (optional)")
     parser.add_option("-w", "--weighted", dest="is_weighted", action="store_true", default=False,
                     help="is the network weighted?")
+    parser.add_option("-r", "--record-dendrogram", dest="dendro_flag", action="store_true", 
+                      default=False, help="recording the whole dendrogram (optional)")
                     
     # parse options:
     (options, args) = parser.parse_args()
@@ -301,7 +334,7 @@ Output:
         delimiter = '\t'
     threshold   = options.threshold
     is_weighted = options.is_weighted
-    
+    dendro_flag = options.dendro_flag
     
     print "# loading network from edgelist..."
     basename = os.path.splitext(args[0])[0]
@@ -323,7 +356,13 @@ Output:
         if is_weighted:
             edge2cid,S_max,D_max,list_D = HLC( adj,edges ).single_linkage( w=ij2wij )
         else:
-            edge2cid,S_max,D_max,list_D = HLC( adj,edges ).single_linkage()
+            if dendro_flag:
+                edge2cid,S_max,D_max,list_D, orig_cid2edge, linkage = HLC( adj,edges ).single_linkage( 
+                                                                                dendro_flag=dendro_flag )
+                write_dendro( "%s_dendro" % basename, orig_cid2edge, linkage)
+            else:
+                edge2cid,S_max,D_max,list_D = HLC( adj,edges ).single_linkage()
+
         f = open("%s_thr_D.txt" % basename,'w')
         for s,D in list_D:
             print >>f, s, D
