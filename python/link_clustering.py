@@ -129,7 +129,7 @@ class HLC:
         # merging gives the maximum partition density (e.g. a single clique). 
         for oms,eij_eik in chain(H, [(1.0, (None, None))] ):
             S = 1-oms # remember, H is a min-heap
-            if S < threshold:
+            if threshold and S < threshold:
                 break
                 
             if S != S_prev: # update list
