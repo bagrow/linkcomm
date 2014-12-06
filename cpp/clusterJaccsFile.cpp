@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // USAGE:
 //
-//  g++ -O5 -o cluster clusterJaccsFile.cpp
+//  g++ -O3 -o cluster clusterJaccsFile.cpp
 //  ./cluster network.pairs network.jaccs network.clusters threshold
 //   
 //     -- network.pairs is an integer edgelist (one edge, two nodes

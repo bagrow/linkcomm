@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // USAGE:
-//      g++ -O5 -o calc calcAndWrite_Jaccards.cpp
+//      g++ -O3 -o calc calcAndWrite_Jaccards.cpp
 //      ./calc network.pairs network.jaccs
 //
 //  -- network.pairs is an integer edgelist (one edge, two nodes
