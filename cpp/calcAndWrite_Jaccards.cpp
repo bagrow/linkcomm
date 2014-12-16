@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // USAGE:
-//      g++ -O5 -o calc calcAndWrite_Jaccards.cpp
+//      g++ -O3 -o calc calcAndWrite_Jaccards.cpp
 //      ./calc network.pairs network.jaccs
 //
 //  -- network.pairs is an integer edgelist (one edge, two nodes
@@ -76,13 +76,13 @@ int intersection_size( const set<int> &A, const set<int> &B ) {
 int main (int argc, char const *argv[]){
     // make sure args are present:
     if (!argv[1]){
-        cout << "ERROR: no input file specified" << endl;
-        cout << "usage:\n    " << argv[0] << " input.pairs output.jaccs" << endl;
+        cerr << "ERROR: no input file specified" << endl;
+        cerr << "usage:\n    " << argv[0] << " input.pairs output.jaccs" << endl;
         exit(1);
     }
     if (!argv[2]){
-        cout << "ERROR: no output file specified" << endl;
-        cout << "usage:\n    " << argv[0] << " input.pairs output.jaccs" << endl;
+        cerr << "ERROR: no output file specified" << endl;
+        cerr << "usage:\n    " << argv[0] << " input.pairs output.jaccs" << endl;
         exit(1);
     }
 
@@ -91,12 +91,11 @@ int main (int argc, char const *argv[]){
     ifstream inFile;
     inFile.open (argv[1]);
     if (!inFile) {
-        cout << "ERROR: unable to open input file" << endl;
+        cerr << "ERROR: unable to open input file" << endl;
         exit(1); // terminate with error
     }
-    int ni,nj, max_node = -1, num_edges = 0;
+    int ni,nj, max_node = -1;
     while (inFile >> ni >> nj){ // scan edgelist once to get number of edges and nodes, for allocation
-        num_edges++; 
         if (ni > max_node){  max_node = ni;  }
         if (nj > max_node){  max_node = nj;  }
     }
@@ -124,8 +123,6 @@ int main (int argc, char const *argv[]){
     int n_i, n_j, keystone, len_int;
     double curr_jacc;
     set<int>::iterator i, j;
-    vector<int> set_out;
-    vector<int>::iterator si;
     for (int keystone=0; keystone < num_nodes; keystone++) { // loop over keystones 
         
         for ( i = neighbors[keystone].begin(); i != neighbors[keystone].end(); i++) { // neighbors of keystone
@@ -139,13 +136,7 @@ int main (int argc, char const *argv[]){
                     continue;
                 
                 len_int = intersection_size( neighbors[n_i], neighbors[n_j] );    // my set intersection function
-                //set_out.clear();                                                // the stl function
-                //set_intersection( neighbors[n_i].begin(), neighbors[n_i].end(), // ...
-                //                  neighbors[n_j].begin(), neighbors[n_j].end(), // ...
-                //                  back_inserter(set_out)                        // ...
-                //                 );                                             // ...
-                //len_int = set_out.size();                                       // ...
-                curr_jacc = len_int / (double)( neighbors[n_i].size() + neighbors[n_j].size() - len_int );
+                curr_jacc = (double) len_int / (double)( neighbors[n_i].size() + neighbors[n_j].size() - len_int );
                 
                 if (keystone < n_i && keystone < n_j){
                     fprintf( jaccFile, "%i\t%i\t%i\t%i\t%f\n", keystone, n_i, keystone, n_j, curr_jacc );
